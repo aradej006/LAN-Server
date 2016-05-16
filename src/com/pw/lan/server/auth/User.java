@@ -7,6 +7,7 @@ public class User {
 
     private String login;
     private String password;
+    private String hashAlgorithm;
 
     public String getLogin() {
         return login;
@@ -22,5 +23,13 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getHashAlgorithm() {
+        return hashAlgorithm;
+    }
+
+    public void setHashAlgorithm(String hashAlgorithm) {
+        this.hashAlgorithm = hashAlgorithm;
     }
 }
