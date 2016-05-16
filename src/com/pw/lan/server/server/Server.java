@@ -5,26 +5,27 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
-import java.util.Enumeration;
-import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class Server implements Runnable{
+public class Server implements Runnable {
+
+    private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 
     private ServerSocket serverSocket;
     private Vector<Service> clients;
     private int port;
-    private List<String> info;
     private boolean running;
-    private int backlog;
     private InetAddress inetAddress;
     private int _lastID = -1;
 
-    public Server(int port, List<String> info) {
+    public Server(int port) {
+        LOGGER.info("Server: Starting...");
         setInetAddress();
+        LOGGER.log(Level.INFO, "Server: Setting port={0}", port);
         this.port = port;
         clients = new Vector<>();
-        this.info = info;
         if (setServer()) {
             running = true;
             new Thread(this).start();
@@ -33,9 +34,11 @@ public class Server implements Runnable{
 
     private void setInetAddress() {
         try {
+            LOGGER.info("Server: Setting InetAddress.getLocalHost()");
             inetAddress = InetAddress.getLocalHost();
+            LOGGER.info("Server: InetAddress Set");
         } catch (UnknownHostException e) {
-            info.add("Exception in getting InetAdress");
+            LOGGER.severe("Server: Exception in getting InetAdress.getLocalHost()");
             e.printStackTrace();
         }
     }
@@ -56,25 +59,25 @@ public class Server implements Runnable{
     public void run() {
         while (running) {
             try {
-                addClientService(new Service(serverSocket.accept(), this, info));
+                addClientService(new Service(serverSocket.accept(), this, nextID()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    synchronized void addClientService(Service clientService)
-            throws IOException {
+    synchronized void addClientService(Service clientService) throws IOException {
         clientService.init();
         clients.addElement(clientService);
         new Thread(clientService).start();
-        info.add("Add new client number " + clients.size());
+        LOGGER.log(Level.INFO,"Server: Add new service number " + _lastID);
     }
 
     synchronized void removeClientService(Service clientService) {
+        LOGGER.log(Level.INFO,"Server: Removing service {0}.", clientService.getIds());
         clients.removeElement(clientService);
         clientService.close();
-        info.add("Remove client number " + clients.size());
+        LOGGER.log(Level.INFO,"Server: Removed service {0}.", clientService.getIds());
     }
 
     synchronized void send(String msg) {
@@ -82,50 +85,35 @@ public class Server implements Runnable{
             s.send(msg);
     }
 
-    synchronized void send(String msg, Service skip) {
-        Enumeration<Service> e = clients.elements();
-        while (e.hasMoreElements()) {
-            Service elem = (Service) e.nextElement();
-            if (elem != skip)
-                elem.send(msg);
-        }
-    }
-
     synchronized int nextID() {
         return ++_lastID;
     }
 
-    public String getInfo() {
-        if (!info.isEmpty()) {
-            return info.remove(0);
-        } else {
-            return null;
-        }
-    }
-
     public void close() {
+        LOGGER.log(Level.INFO,"Server: Closing...");
         send(null);
         while (clients.size() != 0) {
+            LOGGER.log(Level.INFO, "Server: Waiting for ending all connections. Remaining {0}.", clients.size());
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        info.add("Server Closed");
+        LOGGER.info("Server: Closed.");
         running = false;
     }
 
     private boolean setServer() {
         try {
-            serverSocket = new ServerSocket(port, backlog, inetAddress);
-            info.add("Server Started at " + inetAddress.getHostAddress() + ":" + port);
+            LOGGER.log(Level.INFO, "Server: Creating ServerSocket with {0}:{1}", new Object[]{inetAddress.getHostAddress(), port});
+            serverSocket = new ServerSocket(port, 10, inetAddress);
+            LOGGER.log(Level.INFO, "Server: Started at {0}:{1}", new Object[]{inetAddress.getHostAddress(), port});
             return true;
         } catch (IOException e) {
-            info.add("Server ERROR! Selected port is already used. Message: "
-                    + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Server: ERROR! Server can't started.");
+            e.printStackTrace();
             running = false;
-            // e.printStackTrace();
             return false;
         }
     }
