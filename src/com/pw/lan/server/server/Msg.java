@@ -5,7 +5,16 @@ package com.pw.lan.server.server;
  */
 public final class Msg {
 
-    public static final String TYPE = "type";
-    public static final String HELLO = "hello";
-    public static final String NAME = "name";
+    static final String TYPE = "type";
+    static final String HELLO = "hello";
+    static final String NAME = "name";
+    static final String DO_LOGIN = "doLogin";
+    static final String LOGIN = "login";
+    static final String LOGINRESULT = "loginResult";
+    static final String LOGINMSG = "loginMsg";
+    static final String LOGINCONFIRMED = "loginConfirmed";
+    static final String LOGINFAILED = "loginFailed";
+    static final String PASSWORD = "password";
+    static final String ALGORITHM = "algorithm";
+
 }

@@ -1,9 +1,13 @@
 package com.pw.lan.server.server;
 
+import com.pw.lan.server.auth.AuthService;
+import com.pw.lan.server.auth.User;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,10 +24,13 @@ public class Service implements Runnable {
     private ObjectInputStream input;
     private ObjectOutputStream output;
 
+    private AuthService authService;
+
     public Service(Socket socket, Server server, int number) {
         tServer = server;
         this.number = number;
         this.clientSocket = socket;
+        authService = new AuthService();
         LOGGER.log(Level.INFO, "Service: Creating service {0}", getIds());
     }
 
@@ -80,9 +87,26 @@ public class Service implements Runnable {
                     Map msgs = (Map) request;
                     if (msgs.get(Msg.TYPE).toString().equals(Msg.HELLO)) {
                         clientName = msgs.get(Msg.NAME).toString();
+                        msgs = new HashMap<>();
+                        msgs.put(Msg.TYPE, Msg.DO_LOGIN);
+                        send(msgs);
+                    } else if (msgs.get(Msg.TYPE).toString().equals(Msg.LOGIN)) {
+                        if (authService.login(new User(msgs.get(Msg.LOGIN).toString(), msgs.get(Msg.PASSWORD).toString(), msgs.get(Msg.ALGORITHM).toString()))) {
+                            msgs = new HashMap<>();
+                            msgs.put(Msg.TYPE,Msg.LOGINRESULT);
+                            msgs.put(Msg.LOGINMSG,Msg.LOGINCONFIRMED);
+                            send(msgs);
+                        }else{
+                            msgs = new HashMap<>();
+                            msgs.put(Msg.TYPE,Msg.LOGINRESULT);
+                            msgs.put(Msg.LOGINMSG,Msg.LOGINFAILED);
+                            send(msgs);
+                        }
+                    } else {
+                        LOGGER.log(Level.INFO, "Service: Received unrecognized type of data from {0}.", getIds());
                     }
-                }else{
-                    LOGGER.log(Level.INFO, "Service: Received bad data from {0}.",getIds());
+                } else {
+                    LOGGER.log(Level.INFO, "Service: Received bad data from {0}.", getIds());
                 }
             }
         }
