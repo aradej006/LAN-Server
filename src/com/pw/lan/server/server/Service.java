@@ -112,10 +112,11 @@ public class Service implements Runnable {
                             msgs.put(Msg.FILESPATH, "root");
                             msgs.put(Msg.FILEMAP, fileProvider.getFiles());
                         } else {
+                            String filesPath = msgs.get(Msg.FILESPATH).toString();
                             msgs = new HashMap<String, Object>();
                             msgs.put(Msg.TYPE, Msg.FILES);
-                            msgs.put(Msg.FILESPATH, Msg.FILESPATH);
-                            msgs.put(Msg.FILEMAP, fileProvider.getFiles(msgs.get(Msg.FILESPATH).toString()));
+                            msgs.put(Msg.FILESPATH, filesPath);
+                            msgs.put(Msg.FILEMAP, fileProvider.getFiles(filesPath));
                         }
                         send(msgs);
                     } else {
