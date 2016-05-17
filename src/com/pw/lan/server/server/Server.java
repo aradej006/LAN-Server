@@ -6,7 +6,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.Vector;
-import java.util.concurrent.SynchronousQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +52,9 @@ public class Server implements Runnable {
         return serverSocket.getInetAddress().toString();
     }
 
+    public int getPort() {
+        return port;
+    }
 
     public int getNumberOfClients() {
         return clients.size();
@@ -76,14 +78,14 @@ public class Server implements Runnable {
         clientService.init();
         clients.addElement(clientService);
         new Thread(clientService).start();
-        LOGGER.log(Level.INFO,"Server: Add new service number " + _lastID);
+        LOGGER.log(Level.INFO, "Server: Add new service number " + _lastID);
     }
 
     synchronized void removeClientService(Service clientService) {
-        LOGGER.log(Level.INFO,"Server: Removing service {0}.", clientService.getIds());
+        LOGGER.log(Level.INFO, "Server: Removing service {0}.", clientService.getIds());
         clients.removeElement(clientService);
         clientService.close();
-        LOGGER.log(Level.INFO,"Server: Removed service {0}.", clientService.getIds());
+        LOGGER.log(Level.INFO, "Server: Removed service {0}.", clientService.getIds());
     }
 
     private synchronized void send(String msg) {
@@ -96,7 +98,7 @@ public class Server implements Runnable {
     }
 
     public void close() {
-        LOGGER.log(Level.INFO,"Server: Closing...");
+        LOGGER.log(Level.INFO, "Server: Closing...");
         send(null);
         while (clients.size() != 0) {
             LOGGER.log(Level.INFO, "Server: Waiting for ending all connections. Remaining {0}.", clients.size());
@@ -112,10 +114,10 @@ public class Server implements Runnable {
 
     private boolean setServer() {
         try {
-            LOGGER.log(Level.INFO, "Server: Creating ServerSocket with {0}:{1}", new Object[]{inetAddress.getHostAddress(), port});
+            LOGGER.log(Level.INFO, "Server: Creating ServerSocket with {0}:{1}", new Object[]{inetAddress.getHostAddress(), ((Integer) port).toString()});
 //            serverSocket = new ServerSocket(port, 10, inetAddress);
-            serverSocket = SSLServerSocketFactory.getDefault().createServerSocket(port,10,inetAddress);
-            LOGGER.log(Level.INFO, "Server: Started at {0}:{1}", new Object[]{inetAddress.getHostAddress(), port});
+            serverSocket = SSLServerSocketFactory.getDefault().createServerSocket(port, 10, inetAddress);
+            LOGGER.log(Level.INFO, "Server: Started at {0}:{1}", new Object[]{inetAddress.getHostAddress(), ((Integer) port).toString()});
             return true;
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Server: ERROR! Server can't started.");
