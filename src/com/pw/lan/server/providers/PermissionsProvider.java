@@ -36,7 +36,7 @@ public class PermissionsProvider {
                         .forEach(d -> directories.put(d.getPath() + " " + g.getGroupName(), d)));
         files.entrySet().stream().filter(map -> map.getValue().contains("dir"))
                 .forEach(e ->
-                        directories.entrySet().stream().filter(dirs -> dirs.getKey().contains(basePath + e.getKey()))
+                        directories.entrySet().stream().filter(dirs -> dirs.getKey().split(" ")[0].equals(basePath + e.getKey()))
                                 .forEach(dir -> {
                                     e.setValue("dir false false");
                                     if (dir.getValue().isCanRead() && dir.getValue().isCanWrite()) {

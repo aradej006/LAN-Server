@@ -121,7 +121,7 @@ public class Service implements Runnable {
                             response.put(Msg.TYPE, Msg.FILES);
                             String filesPath;
                             if (req.get(Msg.FILESPATH) == null) {
-                                filesPath = "root";
+                                filesPath = "root/";
                             } else {
                                 filesPath = req.get(Msg.FILESPATH).toString();
                             }

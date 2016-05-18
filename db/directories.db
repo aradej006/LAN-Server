@@ -1,6 +1,6 @@
 root true true all
 root/documents true true all
 root/documents/documents false false all
-root/work true true all
+root/documents/work true false all
 root/others true true all
 root/pictures true true all
