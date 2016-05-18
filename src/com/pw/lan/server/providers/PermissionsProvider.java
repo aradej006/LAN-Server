@@ -7,7 +7,6 @@ import com.pw.lan.server.domain.repositories.GroupRepository;
 import com.pw.lan.server.domain.repositories.UserRepository;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -16,12 +15,10 @@ import java.util.Map;
 public class PermissionsProvider {
 
     private static PermissionsProvider instance;
-    private GroupRepository groupRepository;
     private DirectoryRepository directoryRepository;
     private UserRepository userRepository;
 
     private PermissionsProvider() {
-        groupRepository = GroupRepository.getInstance();
         directoryRepository = DirectoryRepository.getInstance();
         userRepository = UserRepository.getInstance();
     }
