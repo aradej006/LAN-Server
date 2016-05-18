@@ -1,8 +1,9 @@
 package com.pw.lan.server.server;
 
-import com.pw.lan.server.auth.AuthService;
-import com.pw.lan.server.auth.User;
-import com.pw.lan.server.files.FileProvider;
+import com.pw.lan.server.domain.entities.User;
+import com.pw.lan.server.domain.services.auth.AuthService;
+import com.pw.lan.server.providers.FileProvider;
+import com.pw.lan.server.providers.PermissionsProvider;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -25,9 +26,11 @@ public class Service implements Runnable {
     private ObjectInputStream input;
     private ObjectOutputStream output;
     private boolean loggedIn;
+    private User user;
 
     private AuthService authService;
     private FileProvider fileProvider;
+    private PermissionsProvider permissionsProvider;
 
     public Service(Socket socket, Server server, int number) {
         tServer = server;
@@ -35,6 +38,7 @@ public class Service implements Runnable {
         this.clientSocket = socket;
         authService = new AuthService();
         fileProvider = new FileProvider();
+        permissionsProvider = PermissionsProvider.getInstance();
         LOGGER.log(Level.INFO, "Service: Creating service {0}", getIds());
         loggedIn = false;
     }
@@ -89,40 +93,41 @@ public class Service implements Runnable {
             } else {
                 LOGGER.log(Level.INFO, "Service: Received data from {0} : {1}", new Object[]{getIds(), request});
                 if (request instanceof Map) {
-                    Map msgs = (Map) request;
-                    if (msgs.get(Msg.TYPE).toString().equals(Msg.HELLO)) {
-                        clientName = msgs.get(Msg.NAME).toString();
-                        msgs = new HashMap<>();
-                        msgs.put(Msg.TYPE, Msg.DO_LOGIN);
-                        send(msgs);
-                    } else if (msgs.get(Msg.TYPE).toString().equals(Msg.LOGIN)) {
-                        if (authService.login(new User(msgs.get(Msg.LOGIN).toString(), msgs.get(Msg.PASSWORD).toString(), msgs.get(Msg.ALGORITHM).toString()))) {
-                            msgs = new HashMap<>();
-                            msgs.put(Msg.TYPE, Msg.LOGINRESULT);
-                            msgs.put(Msg.LOGINMSG, Msg.LOGINCONFIRMED);
-                            send(msgs);
+                    Map req = (Map) request;
+                    Map<String, Object> response;
+                    if (req.get(Msg.TYPE).toString().equals(Msg.HELLO)) {
+                        clientName = req.get(Msg.NAME).toString();
+                        response = new HashMap<>();
+                        response.put(Msg.TYPE, Msg.DO_LOGIN);
+                        send(response);
+                    } else if (req.get(Msg.TYPE).toString().equals(Msg.LOGIN)) {
+                        User u = authService.login(new User(req.get(Msg.LOGIN).toString(), req.get(Msg.PASSWORD).toString(), req.get(Msg.ALGORITHM).toString()));
+                        if (u != null) {
+                            user = u;
+                            response = new HashMap<>();
+                            response.put(Msg.TYPE, Msg.LOGINRESULT);
+                            response.put(Msg.LOGINMSG, Msg.LOGINCONFIRMED);
+                            send(response);
                             loggedIn = true;
                         } else {
-                            msgs = new HashMap<>();
-                            msgs.put(Msg.TYPE, Msg.LOGINRESULT);
-                            msgs.put(Msg.LOGINMSG, Msg.LOGINFAILED);
-                            send(msgs);
+                            response = new HashMap<>();
+                            response.put(Msg.TYPE, Msg.LOGINRESULT);
+                            response.put(Msg.LOGINMSG, Msg.LOGINFAILED);
+                            send(response);
                         }
                     } else if (loggedIn) {
-                        if (msgs.get(Msg.TYPE).toString().equals(Msg.GETFILES)) {
-                            if (msgs.get(Msg.FILESPATH) == null) {
-                                msgs = new HashMap<String, Object>();
-                                msgs.put(Msg.TYPE, Msg.FILES);
-                                msgs.put(Msg.FILESPATH, "root");
-                                msgs.put(Msg.FILEMAP, fileProvider.getFiles());
+                        if (req.get(Msg.TYPE).toString().equals(Msg.GETFILES)) {
+                            response = new HashMap<>();
+                            response.put(Msg.TYPE, Msg.FILES);
+                            String filesPath;
+                            if (req.get(Msg.FILESPATH) == null) {
+                                filesPath = "root";
                             } else {
-                                String filesPath = msgs.get(Msg.FILESPATH).toString();
-                                msgs = new HashMap<String, Object>();
-                                msgs.put(Msg.TYPE, Msg.FILES);
-                                msgs.put(Msg.FILESPATH, filesPath);
-                                msgs.put(Msg.FILEMAP, fileProvider.getFiles(filesPath));
+                                filesPath = req.get(Msg.FILESPATH).toString();
                             }
-                            send(msgs);
+                            response.put(Msg.FILESPATH, filesPath);
+                            response.put(Msg.FILEMAP, permissionsProvider.setPermissions(fileProvider.getFiles(filesPath),user, filesPath));
+                            send(response);
                         }
                     } else {
                         LOGGER.log(Level.INFO, "Service: Received unrecognized type of data from {0}.", getIds());

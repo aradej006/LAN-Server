@@ -1,7 +1,7 @@
 package com.pw.lan.server;
 
-import com.pw.lan.server.auth.UserRepository;
-import com.pw.lan.server.files.FileProvider;
+import com.pw.lan.server.domain.repositories.UserRepository;
+import com.pw.lan.server.providers.FileProvider;
 import com.pw.lan.server.server.Server;
 
 import java.io.BufferedReader;
@@ -28,7 +28,7 @@ public class Main {
             } else if (command.equals("state")) {
                 System.out.println(server.getState());
             } else if (command.equals("users")) {
-                UserRepository.getInstance().getUsers().forEach(u -> System.out.println(u.getLogin() + " " + u.getHashAlgorithm() + " " + u.getUserState()));
+                UserRepository.getInstance().getUsers().forEach((k,u) -> System.out.println(u.getLogin() + " " + u.getHashAlgorithm() + " " + u.getUserState()));
             } else if (command.equals("exit")) {
                 break;
             }

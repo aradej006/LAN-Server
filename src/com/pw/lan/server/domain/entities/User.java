@@ -1,4 +1,7 @@
-package com.pw.lan.server.auth;
+package com.pw.lan.server.domain.entities;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by aradej on 2016-05-13.
@@ -9,16 +12,15 @@ public class User {
     private String password;
     private String hashAlgorithm;
     private String userState;
+    private List<Group> groups;
 
-    static final String ACTIVE = "active";
-    static final String DEACTIVE = "deactive";
-    static final String BLOCKED = "blockted";
+    public static final String ACTIVE = "active";
+    public static final String DEACTIVE = "inactive";
+    public static final String BLOCKED = "blocked";
 
 
     public User(String login, String password, String hashAlgorithm, String userState) {
-        this.login = login;
-        this.password = password;
-        this.hashAlgorithm = hashAlgorithm;
+        this(login,password,hashAlgorithm);
         this.userState = userState;
     }
 
@@ -26,6 +28,7 @@ public class User {
         this.login = login;
         this.password = password;
         this.hashAlgorithm = hashAlgorithm;
+        groups = new ArrayList<>();
     }
 
     public String getUserState() {
@@ -58,5 +61,17 @@ public class User {
 
     public void setHashAlgorithm(String hashAlgorithm) {
         this.hashAlgorithm = hashAlgorithm;
+    }
+
+    public void addGroup(Group group){
+        groups.add(group);
+    }
+
+    public List<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
     }
 }

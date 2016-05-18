@@ -1,4 +1,4 @@
-package com.pw.lan.server.files;
+package com.pw.lan.server.providers;
 
 import java.io.File;
 import java.util.HashMap;
