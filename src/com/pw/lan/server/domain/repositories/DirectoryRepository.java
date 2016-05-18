@@ -34,7 +34,7 @@ public class DirectoryRepository {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] split = line.split(" ");
-                directories.put(split[0], new Directory(split[0], Boolean.parseBoolean(split[1]), Boolean.parseBoolean(split[2]), new Group(split[3])));
+                directories.put(split[0] + " " + split[3], new Directory(split[0], Boolean.parseBoolean(split[1]), Boolean.parseBoolean(split[2]), new Group(split[3])));
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

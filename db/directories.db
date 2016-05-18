@@ -4,3 +4,5 @@ root/documents/documents false false all
 root/documents/work true false all
 root/others true true all
 root/pictures true true all
+root/documents/documents true true admins
+root/documents/work true true admins
