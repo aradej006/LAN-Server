@@ -3,19 +3,27 @@ package com.pw.lan.server;
 import com.pw.lan.server.domain.repositories.UserRepository;
 import com.pw.lan.server.providers.FileProvider;
 import com.pw.lan.server.server.Server;
+import com.pw.lan.server.tftpserver.TFTPServer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         FileProvider fp = new FileProvider();
         fp.getFiles("root/documents");
         Server server = new Server(10000);
         String command = "";
         BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
+
+        String directory =  System.getProperty("user.dir") + '/';
+        TFTPServer tftpServer = new TFTPServer(20000,directory);
+
         while (true) {
             try {
                 command = console.readLine();
