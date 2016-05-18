@@ -1,5 +1,9 @@
 package com.pw.lan.server.auth;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,10 +14,26 @@ public class UserRepository {
 
     private static UserRepository instance;
     private List<User> users;
+    private static final String USERSFILE = "users.usr";
 
     private UserRepository() {
         users = new ArrayList<>();
-        users.add(new User("a", "a", "SHA-256", User.ACTIVE));
+        readUsers();
+    }
+
+    private void readUsers(){
+        try (BufferedReader br = new BufferedReader(new FileReader(USERSFILE))) {
+            String line;
+            String[] split;
+            while((line=br.readLine())!=null){
+                split = line.split(" ");
+                users.add(new User(split[0],split[1],split[2],split[3]));
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static UserRepository getInstance() {
@@ -31,4 +51,7 @@ public class UserRepository {
         return null;
     }
 
+    public List<User> getUsers(){
+        return users;
+    }
 }

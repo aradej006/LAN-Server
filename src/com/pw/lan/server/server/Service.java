@@ -24,6 +24,7 @@ public class Service implements Runnable {
     private String clientName;
     private ObjectInputStream input;
     private ObjectOutputStream output;
+    private boolean loggedIn;
 
     private AuthService authService;
     private FileProvider fileProvider;
@@ -35,6 +36,7 @@ public class Service implements Runnable {
         authService = new AuthService();
         fileProvider = new FileProvider();
         LOGGER.log(Level.INFO, "Service: Creating service {0}", getIds());
+        loggedIn = false;
     }
 
     void init() throws IOException {
@@ -99,26 +101,29 @@ public class Service implements Runnable {
                             msgs.put(Msg.TYPE, Msg.LOGINRESULT);
                             msgs.put(Msg.LOGINMSG, Msg.LOGINCONFIRMED);
                             send(msgs);
+                            loggedIn = true;
                         } else {
                             msgs = new HashMap<>();
                             msgs.put(Msg.TYPE, Msg.LOGINRESULT);
                             msgs.put(Msg.LOGINMSG, Msg.LOGINFAILED);
                             send(msgs);
                         }
-                    } else if (msgs.get(Msg.TYPE).toString().equals(Msg.GETFILES)) {
-                        if (msgs.get(Msg.FILESPATH) == null) {
-                            msgs = new HashMap<String, Object>();
-                            msgs.put(Msg.TYPE, Msg.FILES);
-                            msgs.put(Msg.FILESPATH, "root");
-                            msgs.put(Msg.FILEMAP, fileProvider.getFiles());
-                        } else {
-                            String filesPath = msgs.get(Msg.FILESPATH).toString();
-                            msgs = new HashMap<String, Object>();
-                            msgs.put(Msg.TYPE, Msg.FILES);
-                            msgs.put(Msg.FILESPATH, filesPath);
-                            msgs.put(Msg.FILEMAP, fileProvider.getFiles(filesPath));
+                    } else if (loggedIn) {
+                        if (msgs.get(Msg.TYPE).toString().equals(Msg.GETFILES)) {
+                            if (msgs.get(Msg.FILESPATH) == null) {
+                                msgs = new HashMap<String, Object>();
+                                msgs.put(Msg.TYPE, Msg.FILES);
+                                msgs.put(Msg.FILESPATH, "root");
+                                msgs.put(Msg.FILEMAP, fileProvider.getFiles());
+                            } else {
+                                String filesPath = msgs.get(Msg.FILESPATH).toString();
+                                msgs = new HashMap<String, Object>();
+                                msgs.put(Msg.TYPE, Msg.FILES);
+                                msgs.put(Msg.FILESPATH, filesPath);
+                                msgs.put(Msg.FILEMAP, fileProvider.getFiles(filesPath));
+                            }
+                            send(msgs);
                         }
-                        send(msgs);
                     } else {
                         LOGGER.log(Level.INFO, "Service: Received unrecognized type of data from {0}.", getIds());
                     }
