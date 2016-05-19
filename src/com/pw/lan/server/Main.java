@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Locale;
 
 public class Main {
 
@@ -19,9 +20,16 @@ public class Main {
         fp.getFiles("root/documents");
         Server server = new Server(10000);
         String command = "";
+        String directory;
         BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
 
-        String directory =  System.getProperty("user.dir") + '/';
+        String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
+        if(OS.indexOf("win") >= 0){
+
+           directory =  System.getProperty("user.dir") + '\\';
+        }else{
+            directory =  System.getProperty("user.dir") + '/';
+        }
         TFTPServer tftpServer = new TFTPServer(20000,directory);
 
         while (true) {
