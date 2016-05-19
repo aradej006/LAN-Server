@@ -52,6 +52,10 @@ public class Server implements Runnable {
         return serverSocket.getInetAddress().toString();
     }
 
+    public InetAddress getInetAddressAsInetAddress(){
+        return inetAddress;
+    }
+
     public int getPort() {
         return port;
     }

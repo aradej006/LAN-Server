@@ -8,9 +8,6 @@ import com.pw.lan.server.tftpserver.TFTPServer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Locale;
 
 public class Main {
@@ -30,7 +27,7 @@ public class Main {
         }else{
             directory =  System.getProperty("user.dir") + '/';
         }
-        TFTPServer tftpServer = new TFTPServer(20000,directory);
+        TFTPServer tftpServer = new TFTPServer(20000,directory,server.getInetAddressAsInetAddress());
 
         while (true) {
             try {
