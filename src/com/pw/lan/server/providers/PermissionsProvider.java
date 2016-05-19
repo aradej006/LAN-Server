@@ -3,7 +3,6 @@ package com.pw.lan.server.providers;
 import com.pw.lan.server.domain.entities.Directory;
 import com.pw.lan.server.domain.entities.User;
 import com.pw.lan.server.domain.repositories.DirectoryRepository;
-import com.pw.lan.server.domain.repositories.GroupRepository;
 import com.pw.lan.server.domain.repositories.UserRepository;
 
 import java.util.HashMap;
@@ -38,7 +37,7 @@ public class PermissionsProvider {
                 .forEach(e ->
                         directories.entrySet().stream().filter(dirs -> dirs.getKey().split(" ")[0].equals(basePath + e.getKey()))
                                 .forEach(dir -> {
-                                    if(e.getValue().equals("dir")) e.setValue("dir false false");
+                                    if (e.getValue().equals("dir")) e.setValue("dir false false");
                                     if (dir.getValue().isCanRead() && dir.getValue().isCanWrite()) {
                                         e.setValue("dir true true");
                                     } else if (dir.getValue().isCanRead() && e.getValue().equals("dir false false")) {
@@ -46,8 +45,14 @@ public class PermissionsProvider {
                                     }
                                 })
                 );
-        files.entrySet().removeIf( f -> f.getValue().equals("dir false false"));
+        files.entrySet().removeIf(f -> f.getValue().equals("dir false false"));
         return files;
+    }
+
+    public boolean canRemove(String pathToFile, User user) {
+        return user.getGroups().stream()
+                .anyMatch(group -> group.getDirectories().stream()
+                        .anyMatch(directory -> directory.getPath().equals(pathToFile.substring(0, pathToFile.lastIndexOf("/"))) && directory.isCanWrite()));
     }
 
 }

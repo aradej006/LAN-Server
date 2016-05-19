@@ -5,6 +5,7 @@ import com.pw.lan.server.domain.services.auth.AuthService;
 import com.pw.lan.server.providers.FileProvider;
 import com.pw.lan.server.providers.PermissionsProvider;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -127,6 +128,17 @@ public class Service implements Runnable {
                             }
                             response.put(Msg.FILESPATH, filesPath);
                             response.put(Msg.FILEMAP, permissionsProvider.setPermissions(fileProvider.getFiles(filesPath),user, filesPath));
+                            send(response);
+                        } else if (req.get(Msg.TYPE).toString().equals(Msg.DELETEFILE)) {
+                            File file = new File(req.get(Msg.DELETEPATH).toString());
+                            response = new HashMap<>();
+                            response.put(Msg.TYPE,Msg.DELETEFILE);
+                            response.put(Msg.DELETEPATH, req.get(Msg.DELETEPATH).toString());
+                            if( permissionsProvider.canRemove(req.get(Msg.DELETEPATH).toString(),user)){
+                                response.put(Msg.DELETERESULT,file.delete()?Msg.DELETECONFIRMED:Msg.DELETEFAILED);
+                            }else{
+                                response.put(Msg.DELETERESULT,Msg.DELETEFAILED);
+                            }
                             send(response);
                         }
                     } else {

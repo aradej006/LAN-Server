@@ -8,7 +8,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by aradej on 2016-05-18.
@@ -48,5 +50,9 @@ public class DirectoryRepository {
                 .filter(map -> map.getValue().getOwner().getGroupName().equals(group.getGroupName()))
                 .forEach(d -> group.addDirectory(d.getValue()));
         return group;
+    }
+
+    public List<Directory> findByPath(String path) {
+        return directories.entrySet().stream().filter(e -> e.getValue().getPath().equals(path)).map(Map.Entry::getValue).collect(Collectors.toList());
     }
 }

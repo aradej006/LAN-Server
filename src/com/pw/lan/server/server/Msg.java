@@ -22,4 +22,10 @@ public final class Msg {
     static final String FILESPATH = "filesPath";
     static final String FILES = "files";
     static final String FILEMAP = "fileMap";
+
+    static final String DELETEFILE = "deleteFile";
+    static final String DELETERESULT = "deleteResult";
+    static final String DELETECONFIRMED ="deleteConfirmed";
+    static final String DELETEFAILED = "deleteFailed";
+    static final String DELETEPATH = "deletePath";
 }
