@@ -1,5 +1,7 @@
 package com.pw.lan.server.domain.entities;
 
+import java.util.Objects;
+
 /**
  * Created by aradej on 2016-05-18.
  */
@@ -47,5 +49,20 @@ public class Directory {
 
     public void setCanWrite(boolean canWrite) {
         this.canWrite = canWrite;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Directory directory = (Directory) o;
+        return canRead == directory.canRead &&
+                canWrite == directory.canWrite &&
+                Objects.equals(path, directory.path);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(path, canRead, canWrite);
     }
 }

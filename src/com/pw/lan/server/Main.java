@@ -3,7 +3,6 @@ package com.pw.lan.server;
 import com.pw.lan.server.domain.repositories.UserRepository;
 import com.pw.lan.server.providers.FileProvider;
 import com.pw.lan.server.server.Server;
-import com.pw.lan.server.tftpserver.TFTPServer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,7 +11,7 @@ import java.util.Locale;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         FileProvider fp = new FileProvider();
         fp.getFiles("root/documents");
         Server server = new Server(10000);
@@ -27,7 +26,9 @@ public class Main {
         }else{
             directory =  System.getProperty("user.dir") + '/';
         }
-        TFTPServer tftpServer = new TFTPServer(20000,directory,server.getInetAddressAsInetAddress());
+
+        com.globalros.tftp.Server tfptServer = new com.globalros.tftp.Server(directory);
+        tfptServer.connect();
 
         while (true) {
             try {

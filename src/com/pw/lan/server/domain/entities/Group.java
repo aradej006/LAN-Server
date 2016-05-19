@@ -25,6 +25,7 @@ public class Group {
     }
 
     public List<Directory> getDirectories() {
+        if (directories == null) directories = new ArrayList<>();
         return directories;
     }
 
@@ -32,9 +33,10 @@ public class Group {
         this.directories = directories;
     }
 
-    public void addDirectory(Directory directory){
-        if(directories == null) directories = new ArrayList<>();
-        directories.add(directory);
+    public void addDirectory(Directory directory) {
+        if (directories == null) directories = new ArrayList<>();
+        if (!directories.stream().filter(dir -> dir.equals(directory)).findAny().isPresent())
+            directories.add(directory);
     }
 
     @Override

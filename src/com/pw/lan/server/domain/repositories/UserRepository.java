@@ -58,14 +58,13 @@ public class UserRepository {
         return users;
     }
 
-    public User setGroups(User user){
-        String login = user.getLogin();
+    public User setGroups(User user){        String login = user.getLogin();
         try (BufferedReader br = new BufferedReader(new FileReader(BRIDGEFILE))) {
             String line;
             String[] split;
             while ((line = br.readLine()) != null) {
                 split = line.split(" ");
-                if(split[1].equals(login))
+                if(split[1].equals(login) && !user.getGroups().contains(new Group(split[0])))
                     user.addGroup(new Group(split[0]));
             }
             return user;
