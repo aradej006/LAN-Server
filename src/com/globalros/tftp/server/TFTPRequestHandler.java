@@ -122,8 +122,13 @@ public class TFTPRequestHandler
 
         // get tsize otherwise set default to half megabyte
         int tsize = frq.getTransferSize();
+
+
+        //TSIZE - MAX TRANSFER NOW ~1GB
         if (tsize < 0)
-            tsize = 512 * 1024;
+            tsize = 512 * 1024 * 2048;
+
+
         tftpClient.setTransferSize(tsize);
 
         thisThread = Thread.currentThread();
