@@ -4,6 +4,7 @@ import com.pw.lan.server.domain.entities.User;
 import com.pw.lan.server.domain.services.auth.AuthService;
 import com.pw.lan.server.providers.FileProvider;
 import com.pw.lan.server.providers.PermissionsProvider;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,8 +13,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class Service implements Runnable {
@@ -40,16 +39,16 @@ public class Service implements Runnable {
         authService = new AuthService();
         fileProvider = new FileProvider();
         permissionsProvider = PermissionsProvider.getInstance();
-        LOGGER.log(Level.INFO, "Service: Creating service {0}", getIds());
+        LOGGER.info("Service: Creating service " + getIds());
         loggedIn = false;
     }
 
     void init() throws IOException {
-        LOGGER.log(Level.INFO, "Service: {0} : getting streams...", getIds());
+        LOGGER.debug("Service: " + getIds() + " : getting streams...");
         output = new ObjectOutputStream(clientSocket.getOutputStream());
         output.flush();
         input = new ObjectInputStream(clientSocket.getInputStream());
-        LOGGER.log(Level.INFO, "Service: {0} : streams got successfully.", getIds());
+        LOGGER.debug("Service: " + getIds() + " : streams got successfully.");
     }
 
     void close() {
@@ -58,7 +57,7 @@ public class Service implements Runnable {
             input.close();
             clientSocket.close();
         } catch (IOException e) {
-            LOGGER.log(Level.INFO, "Service: Error closing service {0} with name=", new Object[]{number, clientName});
+            LOGGER.debug("Service: Error closing service " + number + " with name=" + clientName);
         } finally {
             output = null;
             input = null;
@@ -79,7 +78,7 @@ public class Service implements Runnable {
         try {
             return input.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            LOGGER.log(Level.WARNING, "Service: Error reading service {0}.", getIds());
+            LOGGER.debug("Service: Error reading service " + getIds());
         }
         return null;
     }
@@ -89,10 +88,10 @@ public class Service implements Runnable {
         while (true) {
             Object request = receive();
             if (request == null) {
-                LOGGER.log(Level.INFO, "Service: Received logout from {0}.", getIds());
+                LOGGER.debug("Service: Received logout from " + getIds());
                 break;
             } else {
-                LOGGER.log(Level.INFO, "Service: Received data from {0} : {1}", new Object[]{getIds(), request});
+                LOGGER.debug("Service: Received data from "+getIds()+" : "+request);
                 if (request instanceof Map) {
                     Map req = (Map) request;
                     Map<String, Object> response;
@@ -127,25 +126,25 @@ public class Service implements Runnable {
                                 filesPath = req.get(Msg.FILESPATH).toString();
                             }
                             response.put(Msg.FILESPATH, filesPath);
-                            response.put(Msg.FILEMAP, permissionsProvider.setPermissions(fileProvider.getFiles(filesPath),user, filesPath));
+                            response.put(Msg.FILEMAP, permissionsProvider.setPermissions(fileProvider.getFiles(filesPath), user, filesPath));
                             send(response);
                         } else if (req.get(Msg.TYPE).toString().equals(Msg.DELETEFILE)) {
                             File file = new File(req.get(Msg.DELETEPATH).toString());
                             response = new HashMap<>();
-                            response.put(Msg.TYPE,Msg.DELETEFILE);
+                            response.put(Msg.TYPE, Msg.DELETEFILE);
                             response.put(Msg.DELETEPATH, req.get(Msg.DELETEPATH).toString());
-                            if( permissionsProvider.canRemove(req.get(Msg.DELETEPATH).toString(),user)){
-                                response.put(Msg.DELETERESULT,file.delete()?Msg.DELETECONFIRMED:Msg.DELETEFAILED);
-                            }else{
-                                response.put(Msg.DELETERESULT,Msg.DELETEFAILED);
+                            if (permissionsProvider.canRemove(req.get(Msg.DELETEPATH).toString(), user)) {
+                                response.put(Msg.DELETERESULT, file.delete() ? Msg.DELETECONFIRMED : Msg.DELETEFAILED);
+                            } else {
+                                response.put(Msg.DELETERESULT, Msg.DELETEFAILED);
                             }
                             send(response);
                         }
                     } else {
-                        LOGGER.log(Level.INFO, "Service: Received unrecognized type of data from {0}.", getIds());
+                        LOGGER.debug("Service: Received unrecognized type of data from " + getIds());
                     }
                 } else {
-                    LOGGER.log(Level.INFO, "Service: Received bad data from {0}.", getIds());
+                    LOGGER.debug("Service: Received bad data from " + getIds());
                 }
             }
         }

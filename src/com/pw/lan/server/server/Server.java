@@ -1,13 +1,11 @@
 package com.pw.lan.server.server;
 
+import org.apache.log4j.Logger;
+
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Server implements Runnable {
 
@@ -28,7 +26,7 @@ public class Server implements Runnable {
 
         LOGGER.info("Server: Starting...");
         setInetAddress();
-        LOGGER.log(Level.INFO, "Server: Setting port={0}", port);
+        LOGGER.debug("Server: Setting port=" + port);
         this.port = port;
         clients = new Vector<>();
         if (setServer()) {
@@ -43,7 +41,7 @@ public class Server implements Runnable {
             inetAddress = InetAddress.getLocalHost();
             LOGGER.info("Server: InetAddress Set");
         } catch (UnknownHostException e) {
-            LOGGER.severe("Server: Exception in getting InetAdress.getLocalHost()");
+            LOGGER.error("Server: Exception in getting InetAdress.getLocalHost()");
             e.printStackTrace();
         }
     }
@@ -69,9 +67,15 @@ public class Server implements Runnable {
     }
 
     public void run() {
+        try {
+            serverSocket.setSoTimeout(500);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
         while (running) {
             try {
                 addClientService(new Service(serverSocket.accept(), this, nextID()));
+            } catch (SocketTimeoutException e){
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -82,14 +86,14 @@ public class Server implements Runnable {
         clientService.init();
         clients.addElement(clientService);
         new Thread(clientService).start();
-        LOGGER.log(Level.INFO, "Server: Add new service number " + _lastID);
+        LOGGER.debug( "Server: Add new service number " + _lastID);
     }
 
     synchronized void removeClientService(Service clientService) {
-        LOGGER.log(Level.INFO, "Server: Removing service {0}.", clientService.getIds());
+        LOGGER.debug("Server: Removing service " +  clientService.getIds());
         clients.removeElement(clientService);
         clientService.close();
-        LOGGER.log(Level.INFO, "Server: Removed service {0}.", clientService.getIds());
+        LOGGER.debug("Server: Removed service " + clientService.getIds());
     }
 
     private synchronized void send(String msg) {
@@ -102,10 +106,10 @@ public class Server implements Runnable {
     }
 
     public void close() {
-        LOGGER.log(Level.INFO, "Server: Closing...");
+        LOGGER.info("Server: Closing...");
         send(null);
         while (clients.size() != 0) {
-            LOGGER.log(Level.INFO, "Server: Waiting for ending all connections. Remaining {0}.", clients.size());
+            LOGGER.info("Server: Waiting for ending all connections. Remaining " + clients.size());
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
@@ -118,13 +122,13 @@ public class Server implements Runnable {
 
     private boolean setServer() {
         try {
-            LOGGER.log(Level.INFO, "Server: Creating ServerSocket with {0}:{1}", new Object[]{inetAddress.getHostAddress(), ((Integer) port).toString()});
+            LOGGER.info("Server: Creating ServerSocket with " + inetAddress.getHostAddress() +":"+ ((Integer) port).toString());
 //            serverSocket = new ServerSocket(port, 10, inetAddress);
             serverSocket = SSLServerSocketFactory.getDefault().createServerSocket(port, 10, inetAddress);
-            LOGGER.log(Level.INFO, "Server: Started at {0}:{1}", new Object[]{inetAddress.getHostAddress(), ((Integer) port).toString()});
+            LOGGER.info("Server: Started at  " + inetAddress.getHostAddress() +":"+ ((Integer) port).toString());
             return true;
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Server: ERROR! Server can't started.");
+            LOGGER.error("Server: ERROR! Server can't started.");
             e.printStackTrace();
             running = false;
             return false;
