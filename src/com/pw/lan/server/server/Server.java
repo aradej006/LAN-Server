@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
 import java.net.*;
+import java.util.Enumeration;
 import java.util.Vector;
 
 public class Server implements Runnable {
@@ -36,14 +37,37 @@ public class Server implements Runnable {
     }
 
     private void setInetAddress() {
-        try {
+//        try {
             LOGGER.info("Server: Setting InetAddress.getLocalHost()");
-            inetAddress = InetAddress.getLocalHost();
+            inetAddress = getCurrentIp();
             LOGGER.info("Server: InetAddress Set");
-        } catch (UnknownHostException e) {
-            LOGGER.error("Server: Exception in getting InetAdress.getLocalHost()");
-            e.printStackTrace();
+//        } catch (UnknownHostException e) {
+//            LOGGER.error("Server: Exception in getting InetAdress.getLocalHost()");
+//            e.printStackTrace();
+//        }
+    }
+
+    private InetAddress getCurrentIp() {
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface
+                    .getNetworkInterfaces();
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface ni = (NetworkInterface) networkInterfaces
+                        .nextElement();
+                Enumeration<InetAddress> nias = ni.getInetAddresses();
+                while(nias.hasMoreElements()) {
+                    InetAddress ia= (InetAddress) nias.nextElement();
+                    if (!ia.isLinkLocalAddress()
+                            && !ia.isLoopbackAddress()
+                            && ia instanceof Inet4Address) {
+                        return ia;
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            LOGGER.error("unable to get current IP " + e.getMessage(), e);
         }
+        return null;
     }
 
     public String getInetAdress() {
