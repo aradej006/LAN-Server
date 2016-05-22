@@ -99,6 +99,7 @@ public class Service implements Runnable {
                         clientName = req.get(Msg.NAME).toString();
                         response = new HashMap<>();
                         response.put(Msg.TYPE, Msg.DO_LOGIN);
+                        LOGGER.debug("Service: Sent data from "+getIds()+" : "+response);
                         send(response);
                     } else if (req.get(Msg.TYPE).toString().equals(Msg.LOGIN)) {
                         User u = authService.login(new User(req.get(Msg.LOGIN).toString(), req.get(Msg.PASSWORD).toString(), req.get(Msg.ALGORITHM).toString()));
@@ -107,12 +108,14 @@ public class Service implements Runnable {
                             response = new HashMap<>();
                             response.put(Msg.TYPE, Msg.LOGINRESULT);
                             response.put(Msg.LOGINMSG, Msg.LOGINCONFIRMED);
+                            LOGGER.debug("Service: Sent data from "+getIds()+" : "+response);
                             send(response);
                             loggedIn = true;
                         } else {
                             response = new HashMap<>();
                             response.put(Msg.TYPE, Msg.LOGINRESULT);
                             response.put(Msg.LOGINMSG, Msg.LOGINFAILED);
+                            LOGGER.debug("Service: Sent data from "+getIds()+" : "+response);
                             send(response);
                         }
                     } else if (loggedIn) {
@@ -127,6 +130,7 @@ public class Service implements Runnable {
                             }
                             response.put(Msg.FILESPATH, filesPath);
                             response.put(Msg.FILEMAP, permissionsProvider.setPermissions(fileProvider.getFiles(filesPath), user, filesPath));
+                            LOGGER.debug("Service: Sent data from "+getIds()+" : "+response);
                             send(response);
                         } else if (req.get(Msg.TYPE).toString().equals(Msg.DELETEFILE)) {
                             File file = new File(req.get(Msg.DELETEPATH).toString());
@@ -134,10 +138,17 @@ public class Service implements Runnable {
                             response.put(Msg.TYPE, Msg.DELETEFILE);
                             response.put(Msg.DELETEPATH, req.get(Msg.DELETEPATH).toString());
                             if (permissionsProvider.canRemove(req.get(Msg.DELETEPATH).toString(), user)) {
-                                response.put(Msg.DELETERESULT, file.delete() ? Msg.DELETECONFIRMED : Msg.DELETEFAILED);
+                                Boolean deleted = false;
+                                try{
+                                    deleted = file.delete();
+                                }catch (SecurityException e){
+                                    e.printStackTrace();
+                                }
+                                response.put(Msg.DELETERESULT, deleted ? Msg.DELETECONFIRMED : Msg.DELETEFAILED);
                             } else {
                                 response.put(Msg.DELETERESULT, Msg.DELETEFAILED);
                             }
+                            LOGGER.debug("Service: Sent data from "+getIds()+" : "+response);
                             send(response);
                         }
                     } else {
